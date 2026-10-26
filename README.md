@@ -112,6 +112,20 @@ Transient customers account for 89,613 bookings, of which 36,514 were canceled. 
 
 **Limitation:** These differences show an association between customer type and cancellation rates. They do not establish that customer type itself causes cancellations. The Group segment also has a much smaller booking volume than the Transient segment.
 
+### Cancellation rate by hotel and customer type
+
+Cancellation rates vary across customer types and differ between City Hotel and Resort Hotel.
+
+In City Hotel, the Contract segment has the highest cancellation rate at 48.04%, followed by Transient customers at 45.62%. Transient-Party customers have a cancellation rate of 28.10%, while Group customers have the lowest rate at 9.90%.
+
+In Resort Hotel, Transient customers have the highest cancellation rate at 31.17%, followed by Transient-Party customers at 19.50%, Group customers at 10.56%, and Contract customers at 8.84%.
+
+The largest difference between hotels occurs in the Contract segment, with cancellation rates of 48.04% in City Hotel and 8.84% in Resort Hotel, a difference of 39.20 percentage points.
+
+**Business insight:** These results highlight customer segments that may warrant further investigation. In particular, the difference in Contract cancellation rates between the two hotels deserves closer examination. The Transient segment also accounts for the largest number of cancellations in both hotels because of its high booking volume.
+
+**Limitation:** The observed differences do not establish the causes of cancellations. Further analysis of booking conditions and other relevant characteristics would be needed to investigate possible explanations.
+
 ### Booking patterns by country
 
 The ten countries with the highest booking counts account for 84.78% of all bookings with a recorded country.
@@ -126,7 +140,7 @@ Portugal has the lowest average ADR and the shortest average length of stay amon
 
 ### Overall findings and next steps
 
-The exploratory analysis identified several patterns in hotel booking behavior. Cancellation rates are higher among bookings made further in advance and vary across customer types. The analysis also revealed differences in booking volume, average ADR, and estimated revenue across countries.
+The exploratory analysis identified several patterns in hotel booking behavior. Cancellation rates are higher among bookings made further in advance and vary across customer types and hotels. In City Hotel, the Contract segment has a cancellation rate of 48.04%, compared with 8.84% in Resort Hotel. The Transient segment accounts for the largest number of cancellations in both hotels. The analysis also revealed differences in booking volume, average ADR, and estimated revenue across countries.
 
 The data quality assessment identified exact duplicate rows, missing values, a negative ADR value, bookings with no guests recorded, and bookings with zero nights. These limitations have been documented, and potentially problematic records have been retained unless there is sufficient evidence to justify a different treatment.
 
@@ -138,6 +152,15 @@ The data quality assessment identified exact duplicate rows, missing values, a n
 - Develop visualizations and business recommendations based on the findings.
 
 **Important limitation:** Estimated revenue is calculated as ADR multiplied by total nights. It is a proxy derived from the available data and should not be interpreted as actual revenue or profit.
+
+## Visualizations
+
+The project includes visualizations to support the analysis of booking trends and cancellation patterns.
+
+- **Year-over-year booking growth:** compares changes in booking volume between equivalent months in different years for City Hotel and Resort Hotel.
+- **Cancellation rates by hotel and customer type:** compares cancellation rates across customer segments for both hotels.
+
+The visualizations are saved in the `visuals/` directory.
 
 ## Technologies
 
