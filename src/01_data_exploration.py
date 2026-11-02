@@ -2,66 +2,25 @@
 # 1. IMPORTS AND CONFIGURATION
 # ==============================================
 
+from data_preparation import load_and_prepare_data
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 
 
-# ==============================================
-# 2. LOAD DATA
-# ==============================================
+# Load and prepare data
+df, df_analysis = load_and_prepare_data()
 
-# Define project paths
+# Define visualization path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-DATA_PATH = PROJECT_ROOT / 'data' / 'raw' / 'hotel_bookings.csv'
 VISUALS_PATH = PROJECT_ROOT / 'visuals'
 
-# Load data
-df = pd.read_csv(DATA_PATH)
+# Create visualization directory
+VISUALS_PATH.mkdir(parents=True, exist_ok=True)
 
 
 # ==============================================
-# 3. DATA PREPARATION
-# ==============================================
-
-# Create a working copy for analysis
-df_analysis = df.copy()
-
-# Create derived columns
-df_analysis['total_nights'] = (
-    df_analysis['stays_in_weekend_nights']
-    + df_analysis['stays_in_week_nights']
-)
-
-df_analysis['estimated_revenue'] = (
-    df_analysis['adr'] * df_analysis['total_nights']
-)
-
-df_analysis['arrival_date'] = pd.to_datetime(
-    df_analysis['arrival_date_year'].astype(str)
-    + '-'
-    + df_analysis['arrival_date_month']
-    + '-'
-    + df_analysis['arrival_date_day_of_month'].astype(str),
-    format='%Y-%B-%d',
-    errors='coerce'
-)
-
-df_analysis['arrival_year'] = df_analysis['arrival_date'].dt.year
-df_analysis['arrival_month'] = df_analysis['arrival_date'].dt.month
-
-# Create a year-month column for time-based analysis
-df_analysis['arrival_year_month'] = (
-    df_analysis['arrival_date'].dt.to_period('M')
-)
-
-# Create a flag for exact duplicate rows
-df_analysis['is_duplicate'] = df_analysis.duplicated(keep=False)
-
-
-# ==============================================
-# 4. DATA QUALITY AUDIT
+# 2. DATA QUALITY AUDIT
 # ==============================================
 
 # Check the dataset dimensions
@@ -135,7 +94,7 @@ print('Rows in duplicate groups:', row_in_duplicate_groups)
 print('Number of duplicate groups:', number_of_duplicate_groups)
 
 # ============================================
-# 5. CHECK POTENTIALLY INVALID VALUES
+# 3. CHECK POTENTIALLY INVALID VALUES
 # ============================================
 
 # Check negative ADR values
@@ -163,7 +122,7 @@ no_guests = df_analysis[(df_analysis['adults'] == 0) & (df_analysis['children'] 
 # Count the selected bookings
 print('\nBookings with no guests:', len(no_guests))
 
-# Count bookings by cancellation statusç
+# Count bookings by cancellation status
 print('\nBookings with no guests: Cancellation status')
 print(no_guests['is_canceled'].value_counts())
 
@@ -351,17 +310,6 @@ print(months_by_year)
 
 # Overall lead time statistics
 print('\nOverall lead time statistics:')
-print(df_analysis['lead_time'].describe())
-
-# Calculate lead time statistic by customer type
-lead_time_by_customer_type = (
-        df_analysis.groupby('customer_type')['lead_time']
-        .agg(['mean', 'median','count'])
-        .sort_values('mean', ascending=False)
-    )
-
-print('\nLead time statistics by customer type:')
-print(lead_time_by_customer_type)
 
 # Calculate lead time statistics by cancellation status
 lead_time_by_cancellation = (
@@ -415,83 +363,6 @@ bookings_by_customer_type['cancellation_rate'] = (
 print('\nCancellation statistics by customer type:')
 print(bookings_by_customer_type)
 
-# Count bookings by year and month
-booking_by_month = (
-    df_analysis
-    .groupby('arrival_year_month')
-    .size()
-)
-
-print('\nBookings by month:')
-print(booking_by_month)
-
-# Calculate monthly bookings and estimated revenue
-monthly_analysis = (
-    df_analysis
-    .groupby('arrival_year_month')
-    .agg(
-        bookings=('arrival_year_month', 'size'),
-        estimated_revenue=('estimated_revenue', 'sum')
-    )
-)
-
-print('\nMonthly Bookings and Estimated Revenue:')
-print(monthly_analysis)
-
-# Calculate estimated revenue per booking
-monthly_analysis['estimated_revenue_per_booking'] = (
-    monthly_analysis['estimated_revenue']
-    / monthly_analysis['bookings']
-)
-
-print('\nMonthly revenue analysis:')
-print(monthly_analysis.round(2))
-
-# Calculate monthly bookings by hotel type
-monthly_bookings_by_hotel = (
-    df_analysis
-    .groupby(['arrival_year_month', 'hotel'])
-    .size()
-    .unstack(fill_value=0)
-)
-
-print('\nMonthly bookings by hotel type:')
-print(monthly_bookings_by_hotel)
-
-# Calculate month-to-month percentage change in bookings
-monthly_booking_growth = monthly_bookings_by_hotel.pct_change() * 100
-
-print('\nMonth-to-month boolking growth (%):')
-print(monthly_booking_growth.round(2))
-
-# Calculate year-over-year booking growth
-monthly_booking_growth_yoy = (
-    monthly_bookings_by_hotel.pct_change(periods=12) * 100
-)
-
-print('\nYear-over-year booking growth (%):')
-print(monthly_booking_growth_yoy.round(2))
-
-# Analyze bookings by customer type
-bookings_by_hotel_customer = (
-    df_analysis
-    .groupby(['hotel', 'customer_type'])
-    .size()
-    .unstack(fill_value=0)
-)
-
-print('\nBookings by hotel and customer type:')
-print(bookings_by_hotel_customer)
-
-# Calculate the percentage of each customer type within each hotel
-customer_type_share = (
-    bookings_by_hotel_customer
-    .div(bookings_by_hotel_customer.sum(axis=1), axis=0)
-    * 100
-)
-
-print('\nCustomer type distribution by hotel (%):')
-print(customer_type_share.round(2))
 
 # Analize cancellation rates by hotel and customer type
 cancellation_by_segment = (
@@ -666,103 +537,7 @@ plt.savefig(
     bbox_inches='tight'
 )
 
-# Plot monthly booking volume
-plt.figure(figsize=(12, 6))
 
-booking_by_month.plot(kind='line', marker='o')
-
-plt.title('Monthly Booking Volume')
-plt.xlabel('Arrival Year-Month')
-plt.ylabel('Number of Bookings')
-plt.xticks(rotation=45)
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig(
-    VISUALS_PATH / 'monthly_booking_volume.png',
-    dpi=300,
-    bbox_inches='tight'
-)
-
-# Plot monthly estimated revenue
-plt.figure(figsize=(12, 6))
-
-monthly_analysis['estimated_revenue'].plot(
-    kind='line',
-    marker='o'
-)
-
-plt.title('Monthly Estimated Revenue')
-plt.xlabel('Arrival Year-Month')
-plt.ylabel('Estimated Revenue (€)')
-plt.xticks(rotation=45)
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig(
-    VISUALS_PATH / 'monthly_estimated_revenue.png',
-    dpi=300,
-    bbox_inches='tight'
-)
-
-# Plot monthly bookings by hotel type
-monthly_bookings_by_hotel.plot(
-    kind='line',
-    marker='o',
-    figsize=(12, 6)
-)
-
-plt.title('Monthly Bookings by Hotel')
-plt.xlabel('Arrival Year-Month')
-plt.ylabel('Number of Bookings')
-plt.xticks(rotation=45)
-plt.grid(True, alpha=0.3)
-plt.legend(title='Hotel Type')
-plt.tight_layout()
-plt.savefig(
-    VISUALS_PATH / 'monthly_bookings_by_hotel.png',
-    dpi=300,
-    bbox_inches='tight'
-)
-
-# Plot year-over-year growth data for visualization
-yoy_plot = monthly_booking_growth_yoy.dropna()
-
-fig, ax = plt.subplots(figsize=(12, 6))
-
-ax.plot(
-    yoy_plot.index.astype(str),
-    yoy_plot['City Hotel'],
-    marker='o',
-    label='City Hotel'
-)
-
-ax.plot(
-    yoy_plot.index.astype(str),
-    yoy_plot['Resort Hotel'],
-    marker='o',
-    label='Resort Hotel'
-)
-
-# Add a reference line at zero growth
-ax.axhline(
-    y=0, 
-    color='gray', 
-    linestyle='--', 
-    linewidth=1
-)
-
-ax.set_title('Year-over-Year Booking Growth by Hotel')
-ax.set_xlabel('Arrival Year-Month')
-ax.set_ylabel('Booking Growth (%)')
-ax.tick_params(axis='x', rotation=45)
-ax.legend()
-ax.grid(axis='y', alpha=0.3)
-
-plt.tight_layout()
-plt.savefig(
-    VISUALS_PATH / 'year_over_year_booking_growth.png',
-    dpi=300,
-    bbox_inches='tight'
-)
 
 # Plot cancellation rates by hotel and customer type
 cancellation_rate_plot = (
@@ -871,4 +646,4 @@ plt.savefig(
     bbox_inches='tight'
 )
 
-plt.show()
+# plt.show()
