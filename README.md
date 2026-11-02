@@ -9,32 +9,43 @@ The goal is to transform raw booking data into actionable business insights that
 ## Business Questions
 
 1. How does the number of bookings evolve over time?
+
 2. Is there a seasonal pattern in demand?
+
 3. How does monthly revenue evolve?
+
 4. What is the average length of stay, and how does it vary?
+
 5. How far in advance do customers make their bookings?
+
 6. What is the booking volume and cancellation rate?
+
 7. Which countries and booking channels generate the highest revenue?
+
 8. Which customer characteristics are associated with higher value?
 
 ## Data Source
 
 The main dataset used in this project is the **Hotel Booking Demand Dataset**, originally published in:
 
-> Antonio, N., de Almeida, A., & Nunes, L. (2019).  
-> _Hotel booking demand datasets._  
+> Antonio, N., de Almeida, A., & Nunes, L. (2019).  
+
+> _Hotel booking demand datasets._  
+
 > _Data in Brief, 22_, 41–49.
 
 The dataset contains booking information from two real hotels in Portugal:
 
 - Resort Hotel
+
 - City Hotel
 
 The observations cover bookings with arrival dates between July 2015 and August 2017.
 
 The dataset contains 119,390 booking records and includes both completed and canceled bookings.
 
-Source:  
+Source:  
+
 https://www.sciencedirect.com/science/article/pii/S2352340918315191
 
 ## Dataset Limitations
@@ -42,10 +53,15 @@ https://www.sciencedirect.com/science/article/pii/S2352340918315191
 The dataset has several limitations that must be considered when interpreting the results:
 
 - Customer identification data was removed for privacy reasons.
+
 - The dataset represents two hotels rather than a single hotel.
+
 - Customer-level longitudinal analysis is therefore limited.
+
 - The dataset does not provide detailed operational costs.
+
 - It does not include detailed spending on additional hotel services such as restaurants, spa treatments, excursions, or transportation.
+
 - Customer satisfaction scores are not included.
 
 Therefore, this project focuses primarily on booking behavior, demand, cancellations, revenue-related metrics, and customer segments rather than individual customer lifetime value.
@@ -126,6 +142,18 @@ The largest difference between hotels occurs in the Contract segment, with cance
 
 **Limitation:** The observed differences do not establish the causes of cancellations. Further analysis of booking conditions and other relevant characteristics would be needed to investigate possible explanations.
 
+### Cancellation contribution by hotel and customer type
+
+Cancellation rate and cancellation contribution measure different aspects of booking cancellations. Cancellation rate measures the percentage of bookings canceled within a segment, while cancellation contribution measures the percentage of all canceled bookings represented by that segment.
+
+City Hotel – Transient contributes the largest share of total cancellations, accounting for 61.27%. Resort Hotel – Transient is the second-largest contributor at 21.29%, followed by City Hotel – Transient-Party at 11.01%. Together, these three segments account for approximately 93.58% of all cancellations.
+
+The segment with the highest cancellation rate is not the largest contributor to total cancellations. City Hotel – Contract has the highest cancellation rate at 48.04%, but contributes only 2.50% of all cancellations. City Hotel – Transient has a lower cancellation rate of 45.62%, but its much larger booking volume results in the highest cancellation contribution.
+
+**Business insight:** If the objective is to reduce the overall number of cancellations, City Hotel – Transient may be a priority for further investigation because it represents the largest share of cancellations. Segments with higher cancellation rates should also be monitored, even when their contribution to the total is smaller.
+
+**Limitation:** These metrics identify where cancellations are concentrated, but they do not explain why bookings are canceled. The results show patterns in this dataset and do not establish causal relationships.
+
 ### Booking patterns by country
 
 The ten countries with the highest booking counts account for 84.78% of all bookings with a recorded country.
@@ -140,16 +168,19 @@ Portugal has the lowest average ADR and the shortest average length of stay amon
 
 ### Overall findings and next steps
 
-The exploratory analysis identified several patterns in hotel booking behavior. Cancellation rates are higher among bookings made further in advance and vary across customer types and hotels. In City Hotel, the Contract segment has a cancellation rate of 48.04%, compared with 8.84% in Resort Hotel. The Transient segment accounts for the largest number of cancellations in both hotels. The analysis also revealed differences in booking volume, average ADR, and estimated revenue across countries.
+The exploratory analysis identified several patterns in hotel booking behavior. Cancellation rates are higher among bookings made further in advance and vary across customer types and hotels. In City Hotel, the Contract segment has the highest cancellation rate at 48.04%, compared with 8.84% for the same segment in Resort Hotel. However, City Hotel – Transient contributes the largest share of all cancellations (61.27%), reflecting its much higher booking volume. The three largest hotel and customer-type segments account for approximately 93.58% of all cancellations. The analysis also revealed differences in booking volume, average ADR, and estimated revenue across countries.
 
 The data quality assessment identified exact duplicate rows, missing values, a negative ADR value, bookings with no guests recorded, and bookings with zero nights. These limitations have been documented, and potentially problematic records have been retained unless there is sufficient evidence to justify a different treatment.
 
 **Next steps:**
 
-- Investigate cancellation patterns in greater detail, considering additional booking characteristics.
+- Investigate the main contributors to cancellations in greater detail, considering additional booking characteristics and booking conditions.
+
 - Analyze trends in bookings and estimated revenue over time, taking into account the partial coverage of 2015 and 2017.
+
 - Evaluate the impact of data quality decisions on key metrics.
-- Develop visualizations and business recommendations based on the findings.
+
+- Extend the visual analysis and develop evidence-based business recommendations.
 
 **Important limitation:** Estimated revenue is calculated as ADR multiplied by total nights. It is a proxy derived from the available data and should not be interpreted as actual revenue or profit.
 
@@ -158,18 +189,27 @@ The data quality assessment identified exact duplicate rows, missing values, a n
 The project includes visualizations to support the analysis of booking trends and cancellation patterns.
 
 - **Year-over-year booking growth:** compares changes in booking volume between equivalent months in different years for City Hotel and Resort Hotel.
+
 - **Cancellation rates by hotel and customer type:** compares cancellation rates across customer segments for both hotels.
+
+- **Cancellation Pareto analysis:** ranks hotel and customer-type segments by canceled bookings and displays their cumulative contribution to total cancellations. The three largest segments account for approximately 93.58% of all cancellations.
 
 The visualizations are saved in the `visuals/` directory.
 
 ## Technologies
 
 - Python
+
 - Pandas
+
 - NumPy
+
 - Matplotlib
+
 - VS Code
+
 - Git
+
 - GitHub
 
 ## Project Status

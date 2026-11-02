@@ -493,7 +493,6 @@ customer_type_share = (
 print('\nCustomer type distribution by hotel (%):')
 print(customer_type_share.round(2))
 
-
 # Analize cancellation rates by hotel and customer type
 cancellation_by_segment = (
     df_analysis
@@ -513,48 +512,159 @@ cancellation_by_segment['cancellation_rate'] = (
 print('\nCancellation rates by hotel and customer type:')
 print(cancellation_by_segment.round(2))
 
+# Estimated revenue analysis by booking status
+revenue_by_status = (
+    df_analysis
+    .groupby('is_canceled')
+    .agg(
+        total_bookings=('is_canceled', 'size'),
+        total_estimated_revenue=('estimated_revenue', 'sum'),
+        average_adr=('adr', 'mean')
+    )
+)
+
+print('\nEstimated revenue by booking status')
+print(revenue_by_status.round(2))
+
+# Booking metrics by hotel and cancellation status
+booking_metrics_by_segment = (
+    df_analysis
+    .groupby(['hotel', 'is_canceled'])
+    .agg(
+        total_bookings=('is_canceled', 'size'),
+        total_estimated_revenue=('estimated_revenue', 'sum'),
+        average_adr=('adr', 'mean')
+    )
+)
+
+print('\nBooking metrics by hotel and cancellation status:')
+print(booking_metrics_by_segment.round(2))
+
+# Cancellation rate by hotel
+cancellation_by_hotel = (
+    df_analysis
+    .groupby('hotel')
+    .agg(
+        total_bookings=('is_canceled', 'size'),
+        canceled_bookings=('is_canceled', 'sum')
+    )
+)
+
+cancellation_by_hotel['cancellation_rate'] = (
+    cancellation_by_hotel['canceled_bookings']
+    / cancellation_by_hotel['total_bookings']
+    * 100
+)
+
+print('\nCancellation rate by hotel')
+print(cancellation_by_hotel.round(2))
+
+# Rank customer segments by cancellation rate within each hotel
+cancellation_ranking = (
+    cancellation_by_segment
+    .sort_values(
+        ['hotel', 'cancellation_rate'],
+        ascending=[True, False]
+    )
+)
+
+print('\nCancellation rate ranking by hotel and customer type')
+print(cancellation_ranking.round(2))
+
+# Calculate the total number of canceled bookings
+total_cancellations = cancellation_by_segment['canceled_bookings'].sum()
+
+# Cancelate each segment's contribution to total cancellations
+cancellation_by_segment['cancellation_contribution'] = (
+    cancellation_by_segment['canceled_bookings']
+    / total_cancellations
+    * 100
+)
+
+cancellation_by_segment_sorted = (
+    cancellation_by_segment
+    .sort_values(
+        by='cancellation_contribution',
+        ascending=False
+    )
+)
+
+print('\nCancellation by segment sorted')
+print(cancellation_by_segment_sorted.round(2))
+
+
 
 
 # ==============================================
 # 7. VISUALIZATIONS
 # ==============================================
 
-# Create a bar chart
-plt.figure(figsize=(10, 6))
-
+# Plot cancellation rate by booking lead time
 lead_time = cancellation_by_lead_time.index
 cancellation_rate = cancellation_by_lead_time.values
 
-plt.bar(
+fig, ax = plt.subplots(figsize=(10, 6))
+
+ax.bar(
     lead_time, 
     cancellation_rate, 
-    width=0.5, 
-    color='lightblue', 
-    align='center'
+    width=0.9, 
+    color='#8ECAE6', 
+    edgecolor='white',
+    linewidth=0.7
 )
 
-# Display the cancellation rate above each bar
-for index, value in enumerate(cancellation_rate):
-    plt.text(index, value + 1, f'{value:.2f}%', ha='center')
+# Percentage labels above the bars
+for index, value in enumerate(cancellation_by_lead_time):
+    ax.text(
+        index, 
+        value + 1, 
+        f'{value:.2f}%', 
+        ha='center',
+        fontsize=10,
+        color='#333333'
+    )
 
 # Configure the chart
-plt.title('Cancellation Rate by Booking Lead Time')
-plt.xlabel('Lead Time Group')
-plt.ylabel('Cancellation Rate (%)')
-plt.xticks(rotation=0)
+ax.set_title(
+    'Cancellation Rate by Booking Lead Time',
+    fontsize=16,
+    fontweight='bold',
+    pad=18
+)
 
-plt.tight_layout()
+ax.set_xlabel('Lead Time Group', labelpad=10)
+ax.set_ylabel('Cancellation Rate (%)', labelpad=10)
+
+# Horizontal gridlines
+ax.set_axisbelow(True)
+ax.grid(
+    axis='y',
+    linestyle='--',
+    linewidth=0.7,
+    alpha=0.3
+)
+
+# Remove unnecessary borders
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+# Improve tick labels
+ax.tick_params(axis='x', labelrotation=0, length=0)
+ax.tick_params(axis='y', labelrotation=10, length=0)
+
+# Leave space above the tallest bar
+ax.margins(y=0.12)
 
 # Create the output directory if it does not exist
 VISUALS_PATH.mkdir(parents=True, exist_ok=True)
 
+plt.tight_layout()
 plt.savefig(
     VISUALS_PATH / 'cancellation_rate_by_lead_time.png',
     dpi=300, 
     bbox_inches='tight'
 )
-
-plt.show()
 
 # Plot monthly booking volume
 plt.figure(figsize=(12, 6))
@@ -567,15 +677,11 @@ plt.ylabel('Number of Bookings')
 plt.xticks(rotation=45)
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
-
 plt.savefig(
     VISUALS_PATH / 'monthly_booking_volume.png',
     dpi=300,
     bbox_inches='tight'
 )
-
-plt.show()
-
 
 # Plot monthly estimated revenue
 plt.figure(figsize=(12, 6))
@@ -591,14 +697,11 @@ plt.ylabel('Estimated Revenue (€)')
 plt.xticks(rotation=45)
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
-
 plt.savefig(
     VISUALS_PATH / 'monthly_estimated_revenue.png',
     dpi=300,
     bbox_inches='tight'
 )
-
-plt.show()
 
 # Plot monthly bookings by hotel type
 monthly_bookings_by_hotel.plot(
@@ -614,19 +717,15 @@ plt.xticks(rotation=45)
 plt.grid(True, alpha=0.3)
 plt.legend(title='Hotel Type')
 plt.tight_layout()
-
 plt.savefig(
     VISUALS_PATH / 'monthly_bookings_by_hotel.png',
     dpi=300,
     bbox_inches='tight'
 )
 
-plt.show()
-
-# Prepare year-over-year growth data for visualization
+# Plot year-over-year growth data for visualization
 yoy_plot = monthly_booking_growth_yoy.dropna()
 
-# Create the chart
 fig, ax = plt.subplots(figsize=(12, 6))
 
 ax.plot(
@@ -643,11 +742,14 @@ ax.plot(
     label='Resort Hotel'
 )
 
-
 # Add a reference line at zero growth
-ax.axhline(y=0, color='gray', linestyle='--', linewidth=1)
+ax.axhline(
+    y=0, 
+    color='gray', 
+    linestyle='--', 
+    linewidth=1
+)
 
-# Add labels and formatting
 ax.set_title('Year-over-Year Booking Growth by Hotel')
 ax.set_xlabel('Arrival Year-Month')
 ax.set_ylabel('Booking Growth (%)')
@@ -656,14 +758,11 @@ ax.legend()
 ax.grid(axis='y', alpha=0.3)
 
 plt.tight_layout()
-
 plt.savefig(
     VISUALS_PATH / 'year_over_year_booking_growth.png',
     dpi=300,
     bbox_inches='tight'
 )
-
-plt.show()
 
 # Plot cancellation rates by hotel and customer type
 cancellation_rate_plot = (
@@ -671,12 +770,13 @@ cancellation_rate_plot = (
     .unstack(level='hotel')
 )
 
-ax = cancellation_rate_plot.plot(
+fig, ax = plt.subplots(figsize=(10, 6))
+
+cancellation_rate_plot.plot(
     kind='bar',
-    figsize=(10, 6)
+    ax=ax
 )
 
-# Configure the chart
 ax.set_title('Cancellation Rate by Hotel and Customer Type')
 ax.set_xlabel('Customer Type')
 ax.set_ylabel('Cancellation Rate (%)')
@@ -693,10 +793,81 @@ for container in ax.containers:
     )
 
 plt.tight_layout()
+plt.savefig(
+    VISUALS_PATH / 'cancellation_rate_by_hotel_customer_type.png',
+    dpi=300, 
+    bbox_inches='tight'
+)
 
+# Plot cancellation rate by hotel
+fig, ax = plt.subplots(figsize=(8, 5))
+
+cancellation_by_hotel['cancellation_rate'].plot(
+    kind='bar',
+    ax = ax
+)
+
+ax.set_title('Cancellation Rate by Hotel')
+ax.set_xlabel('Hotel')
+ax.set_ylabel('Cancellation Rate (%)')
+ax.set_ylim(0, 50)
+ax.set_xticklabels(ax.get_xticklabels(), rotation=0)
+
+# Add percentage labels
+for container in ax.containers:
+    ax.bar_label(
+        container, 
+        fmt='%.2f%%', 
+        padding=3
+    )
+
+plt.tight_layout()
 plt.savefig(
     VISUALS_PATH / 'cancellation_rate_by_hotel.png',
-    dpi=300, 
+    dpi=300,
+    bbox_inches='tight'
+)
+
+# Calculate cumulative cancellation contribution
+cancellation_by_segment_sorted['cumulative_contribution'] = (
+    cancellation_by_segment_sorted['cancellation_contribution'].cumsum()
+)
+
+# Create Pareto chart
+fig, ax1 = plt.subplots(figsize=(12, 6))
+
+# Plot canceled bookings
+cancellation_by_segment_sorted['canceled_bookings'].plot(
+    kind='bar',
+    ax=ax1,
+    color='#8ECAE6',
+    edgecolor='white'
+)
+
+ax1.set_title('Pareto Analysis of Cancellations by Segment')
+ax1.set_xlabel('Hotel and Customer Type')
+ax1.set_ylabel('Canceled Bookings')
+
+# Add cumulative contribution line
+ax2 = ax1.twinx()
+
+ax2.plot(
+    range(len(cancellation_by_segment_sorted)),
+    cancellation_by_segment_sorted['cumulative_contribution'],
+    color='#FB8500',
+    marker='o',
+    linewidth=2
+)
+
+ax2.set_ylabel('Cumulative Contribution (%)')
+ax2.set_ylim(0, 110)
+
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+
+plt.savefig(
+    VISUALS_PATH / 'cancellation_pareto_analysis.png',
+    dpi=300,
     bbox_inches='tight'
 )
 
