@@ -45,7 +45,24 @@ def load_and_prepare_data():
         df_analysis['arrival_date'].dt.to_period('M')
     )
 
-    # Identify exact duplicatee rows
+    # Identify exact duplicate rows
     df_analysis['is_duplicate'] = df_analysis.duplicated(keep=False)
+
+    # Define lead time groups
+    lead_time_bins = [0, 30, 90, 180, float('inf')] 
+    lead_time_labels = [
+        '0-30 days',
+        '31-90 days',
+        '91-180 days',
+        '181+ days'
+    ]
+
+    # Categorize bookings according to their lead time
+    df_analysis['lead_time_group'] = pd.cut(
+        df_analysis['lead_time'],
+        bins=lead_time_bins,
+        labels=lead_time_labels,
+        include_lowest=True
+    )
 
     return df, df_analysis

@@ -1,4 +1,3 @@
-
 # ==============================================
 # 1. IMPORTS AND CONFIGURATION
 # ==============================================
@@ -24,32 +23,12 @@ VISUALS_PATH.mkdir(parents=True, exist_ok=True)
 # 2. BOOKING VOLUME ANALYSIS
 # ==============================================
 
-# Analyze lead time
-print('\nLead time statistics:')
-print(df_analysis['lead_time'].describe())
-
-
 # Count bookings by year and month
 booking_by_month = (
     df_analysis
     .groupby('arrival_year_month')
     .size()
 )
-
-print('\nBookings by month:')
-print(booking_by_month)
-
-
-# Calculate monthly bookings
-monthly_analysis = (
-    df_analysis
-    .groupby('arrival_year_month')
-    .size()
-    .to_frame(name='bookings')
-)
-
-print('\nMonthly booking analysis:')
-print(monthly_analysis)
 
 
 # ==============================================
@@ -118,6 +97,10 @@ print(customer_type_share.round(2))
 # ==============================================
 # 6. LEAD TIME ANALYSIS BY CUSTOMER TYPE
 # ==============================================
+
+# Analyze lead time
+print('\nLead time statistics:')
+print(df_analysis['lead_time'].describe())
 
 # Calculate lead time statistics by customer type
 lead_time_by_customer_type = (
@@ -229,5 +212,3 @@ plt.close()
 
 
 print('\nBooking analysis completed successfully.')
-
-

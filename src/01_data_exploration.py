@@ -2,21 +2,13 @@
 # 1. IMPORTS AND CONFIGURATION
 # ==============================================
 
-from data_preparation import load_and_prepare_data
-from pathlib import Path
 import pandas as pd
-import matplotlib.pyplot as plt
+
+from data_preparation import load_and_prepare_data
 
 
 # Load and prepare data
 df, df_analysis = load_and_prepare_data()
-
-# Define visualization path
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-VISUALS_PATH = PROJECT_ROOT / 'visuals'
-
-# Create visualization directory
-VISUALS_PATH.mkdir(parents=True, exist_ok=True)
 
 
 # ==============================================
@@ -62,7 +54,7 @@ print(duplicate_summary)
 duplicate_rate_by_hotel = (df_analysis.groupby(['hotel', 'is_duplicate'])['is_canceled'].agg(['count', 'mean']))
 duplicate_rate_by_hotel['cancellation_rate'] = (duplicate_rate_by_hotel['mean'] * 100).round(2)
 
-print('|\nDuplicate Analysis: Cancellation Rate by Hotel:')
+print('\nDuplicate Analysis: Cancellation Rate by Hotel:')
 print(duplicate_rate_by_hotel)
 
 # Count exact-row combinations by group size
@@ -92,6 +84,7 @@ print('Total rows:', total_rows)
 print('Groups appearing once:', unique_groups)
 print('Rows in duplicate groups:', row_in_duplicate_groups)
 print('Number of duplicate groups:', number_of_duplicate_groups)
+
 
 # ============================================
 # 3. CHECK POTENTIALLY INVALID VALUES
@@ -137,7 +130,7 @@ print('\nBookings with no guests: Nights by cancellation status')
 print(pd.crosstab(no_guests_nights, no_guests['is_canceled']))
 
 # Compare reservation status and total nights
-print('\nTotal nights with no guests by resertion status:')
+print('\nTotal nights with no guests by reservation status:')
 print(pd.crosstab(no_guests_nights, no_guests['reservation_status']))
 
 # Identify zero-night bookings marked as checked out
@@ -238,8 +231,9 @@ print(
     ].to_string(index=False)
     )
 
+
 # ==============================================
-# 6. EXPLORATORY DATA ANALYSIS
+# 4. EXPLORATORY DATA ANALYSIS
 # ==============================================
 
 # Inspect dataset structure and data types
@@ -257,51 +251,6 @@ print(df_analysis['agent'].value_counts().head(10))
 print('\nTop 10 companies:')
 print(df_analysis['company'].value_counts().head(10))
 
-# Identify the top 10 countries by number of bookings
-bookings_by_country = df_analysis['country'].value_counts()
-top_10_countries = bookings_by_country.head(10).index
-
-print('\nTop 10 countries by bookings:')
-print(bookings_by_country.head(10))
-
-# Calculate the percentage of bookings from the top 10 countries
-percentage_top_10_countries = (
-    bookings_by_country.head(10).sum() 
-    / bookings_by_country.sum()
-) * 100
-
-print(
-    f'\nPercentage of bookings from the top 10 countries: '
-    f'{percentage_top_10_countries:.2f}%'
-)
-
-# Analyze ADR for the top 10 countries
-country_analysis = (
-    df_analysis[df_analysis['country'].isin(top_10_countries)]
-    .groupby('country')
-    .agg(
-        bookings=('country', 'size'),
-        average_adr=('adr', 'mean'),
-        estimated_revenue=('estimated_revenue', 'sum'),
-        estimated_revenue_per_booking=('estimated_revenue', 'mean'),
-        average_nights=('total_nights', 'mean')
-    )
-    .sort_values('bookings', ascending=False)
-)
-
-print('\nKey metrics for the top 10 countries:')
-print(country_analysis.round(2))
-
-# Calculate correlations between total nights and ADR
-correlation_nights_adr = (
-    df_analysis['total_nights'].corr(df_analysis['adr'])
-)
-
-print(
-    f'\nCorrelation between total nights and ADR:'
-    f'{correlation_nights_adr:.2f}'
-)
-
 # Check arrival-month coverage by year
 months_by_year = (df_analysis.groupby('arrival_year')['arrival_month'].agg(['min', 'max','nunique']))
 
@@ -310,6 +259,7 @@ print(months_by_year)
 
 # Overall lead time statistics
 print('\nOverall lead time statistics:')
+print(df_analysis['lead_time'].describe())
 
 # Calculate lead time statistics by cancellation status
 lead_time_by_cancellation = (
@@ -320,330 +270,4 @@ lead_time_by_cancellation = (
 print('\nLead time statistics by cancellation status:')
 print(lead_time_by_cancellation)
 
-# Define lead time intervals
-lead_time_bins = [0, 30, 90, 180, float('inf')]
-
-# Define labels for each lead time interval
-lead_time_labels = [
-    '0-30 days', 
-    '31-90 days', 
-    '91-180 days', 
-    '181+ days'
-]
-
-# Categorize bookings according to their lead time
-df_analysis['lead_time_group'] = pd.cut(
-    df_analysis['lead_time'],
-    bins=lead_time_bins, 
-    labels=lead_time_labels, 
-    include_lowest=True
-)
-
-# Calculate the cancellation rate for each lead time group
-cancellation_by_lead_time = (
-    df_analysis.groupby('lead_time_group', observed=True)['is_canceled']
-    .mean()
-    .mul(100)
-    .round(2)
-)
-
-print('\nCancellation rate by lead time group:')
-print(cancellation_by_lead_time)
-
-# Calculate the proportion of cancelled reservations for each customer type
-bookings_by_customer_type = (
-    df_analysis.groupby('customer_type')['is_canceled']
-    .agg(['count', 'sum', 'mean'])
-)
-
-bookings_by_customer_type['cancellation_rate'] = (
-    bookings_by_customer_type['mean'] * 100
-    ).round(2)
-
-print('\nCancellation statistics by customer type:')
-print(bookings_by_customer_type)
-
-
-# Analize cancellation rates by hotel and customer type
-cancellation_by_segment = (
-    df_analysis
-    .groupby(['hotel', 'customer_type'])
-    .agg(
-        total_bookings=('is_canceled', 'size'),
-        canceled_bookings=('is_canceled', 'sum')
-    )
-)
-
-cancellation_by_segment['cancellation_rate'] = (
-    cancellation_by_segment['canceled_bookings']
-    / cancellation_by_segment['total_bookings']
-    * 100
-)
-
-print('\nCancellation rates by hotel and customer type:')
-print(cancellation_by_segment.round(2))
-
-# Estimated revenue analysis by booking status
-revenue_by_status = (
-    df_analysis
-    .groupby('is_canceled')
-    .agg(
-        total_bookings=('is_canceled', 'size'),
-        total_estimated_revenue=('estimated_revenue', 'sum'),
-        average_adr=('adr', 'mean')
-    )
-)
-
-print('\nEstimated revenue by booking status')
-print(revenue_by_status.round(2))
-
-# Booking metrics by hotel and cancellation status
-booking_metrics_by_segment = (
-    df_analysis
-    .groupby(['hotel', 'is_canceled'])
-    .agg(
-        total_bookings=('is_canceled', 'size'),
-        total_estimated_revenue=('estimated_revenue', 'sum'),
-        average_adr=('adr', 'mean')
-    )
-)
-
-print('\nBooking metrics by hotel and cancellation status:')
-print(booking_metrics_by_segment.round(2))
-
-# Cancellation rate by hotel
-cancellation_by_hotel = (
-    df_analysis
-    .groupby('hotel')
-    .agg(
-        total_bookings=('is_canceled', 'size'),
-        canceled_bookings=('is_canceled', 'sum')
-    )
-)
-
-cancellation_by_hotel['cancellation_rate'] = (
-    cancellation_by_hotel['canceled_bookings']
-    / cancellation_by_hotel['total_bookings']
-    * 100
-)
-
-print('\nCancellation rate by hotel')
-print(cancellation_by_hotel.round(2))
-
-# Rank customer segments by cancellation rate within each hotel
-cancellation_ranking = (
-    cancellation_by_segment
-    .sort_values(
-        ['hotel', 'cancellation_rate'],
-        ascending=[True, False]
-    )
-)
-
-print('\nCancellation rate ranking by hotel and customer type')
-print(cancellation_ranking.round(2))
-
-# Calculate the total number of canceled bookings
-total_cancellations = cancellation_by_segment['canceled_bookings'].sum()
-
-# Cancelate each segment's contribution to total cancellations
-cancellation_by_segment['cancellation_contribution'] = (
-    cancellation_by_segment['canceled_bookings']
-    / total_cancellations
-    * 100
-)
-
-cancellation_by_segment_sorted = (
-    cancellation_by_segment
-    .sort_values(
-        by='cancellation_contribution',
-        ascending=False
-    )
-)
-
-print('\nCancellation by segment sorted')
-print(cancellation_by_segment_sorted.round(2))
-
-
-
-
-# ==============================================
-# 7. VISUALIZATIONS
-# ==============================================
-
-# Plot cancellation rate by booking lead time
-lead_time = cancellation_by_lead_time.index
-cancellation_rate = cancellation_by_lead_time.values
-
-fig, ax = plt.subplots(figsize=(10, 6))
-
-ax.bar(
-    lead_time, 
-    cancellation_rate, 
-    width=0.9, 
-    color='#8ECAE6', 
-    edgecolor='white',
-    linewidth=0.7
-)
-
-# Percentage labels above the bars
-for index, value in enumerate(cancellation_by_lead_time):
-    ax.text(
-        index, 
-        value + 1, 
-        f'{value:.2f}%', 
-        ha='center',
-        fontsize=10,
-        color='#333333'
-    )
-
-# Configure the chart
-ax.set_title(
-    'Cancellation Rate by Booking Lead Time',
-    fontsize=16,
-    fontweight='bold',
-    pad=18
-)
-
-ax.set_xlabel('Lead Time Group', labelpad=10)
-ax.set_ylabel('Cancellation Rate (%)', labelpad=10)
-
-# Horizontal gridlines
-ax.set_axisbelow(True)
-ax.grid(
-    axis='y',
-    linestyle='--',
-    linewidth=0.7,
-    alpha=0.3
-)
-
-# Remove unnecessary borders
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-
-# Improve tick labels
-ax.tick_params(axis='x', labelrotation=0, length=0)
-ax.tick_params(axis='y', labelrotation=10, length=0)
-
-# Leave space above the tallest bar
-ax.margins(y=0.12)
-
-# Create the output directory if it does not exist
-VISUALS_PATH.mkdir(parents=True, exist_ok=True)
-
-plt.tight_layout()
-plt.savefig(
-    VISUALS_PATH / 'cancellation_rate_by_lead_time.png',
-    dpi=300, 
-    bbox_inches='tight'
-)
-
-
-
-# Plot cancellation rates by hotel and customer type
-cancellation_rate_plot = (
-    cancellation_by_segment['cancellation_rate']
-    .unstack(level='hotel')
-)
-
-fig, ax = plt.subplots(figsize=(10, 6))
-
-cancellation_rate_plot.plot(
-    kind='bar',
-    ax=ax
-)
-
-ax.set_title('Cancellation Rate by Hotel and Customer Type')
-ax.set_xlabel('Customer Type')
-ax.set_ylabel('Cancellation Rate (%)')
-ax.set_ylim(0, 100)
-ax.set_xticklabels(ax.get_xticklabels(), rotation=0)
-ax.legend(title='Hotel')
-
-# Add percentage labels above each bar
-for container in ax.containers:
-    ax.bar_label(
-        container,
-        fmt='%.1f%%',
-        padding=3
-    )
-
-plt.tight_layout()
-plt.savefig(
-    VISUALS_PATH / 'cancellation_rate_by_hotel_customer_type.png',
-    dpi=300, 
-    bbox_inches='tight'
-)
-
-# Plot cancellation rate by hotel
-fig, ax = plt.subplots(figsize=(8, 5))
-
-cancellation_by_hotel['cancellation_rate'].plot(
-    kind='bar',
-    ax = ax
-)
-
-ax.set_title('Cancellation Rate by Hotel')
-ax.set_xlabel('Hotel')
-ax.set_ylabel('Cancellation Rate (%)')
-ax.set_ylim(0, 50)
-ax.set_xticklabels(ax.get_xticklabels(), rotation=0)
-
-# Add percentage labels
-for container in ax.containers:
-    ax.bar_label(
-        container, 
-        fmt='%.2f%%', 
-        padding=3
-    )
-
-plt.tight_layout()
-plt.savefig(
-    VISUALS_PATH / 'cancellation_rate_by_hotel.png',
-    dpi=300,
-    bbox_inches='tight'
-)
-
-# Calculate cumulative cancellation contribution
-cancellation_by_segment_sorted['cumulative_contribution'] = (
-    cancellation_by_segment_sorted['cancellation_contribution'].cumsum()
-)
-
-# Create Pareto chart
-fig, ax1 = plt.subplots(figsize=(12, 6))
-
-# Plot canceled bookings
-cancellation_by_segment_sorted['canceled_bookings'].plot(
-    kind='bar',
-    ax=ax1,
-    color='#8ECAE6',
-    edgecolor='white'
-)
-
-ax1.set_title('Pareto Analysis of Cancellations by Segment')
-ax1.set_xlabel('Hotel and Customer Type')
-ax1.set_ylabel('Canceled Bookings')
-
-# Add cumulative contribution line
-ax2 = ax1.twinx()
-
-ax2.plot(
-    range(len(cancellation_by_segment_sorted)),
-    cancellation_by_segment_sorted['cumulative_contribution'],
-    color='#FB8500',
-    marker='o',
-    linewidth=2
-)
-
-ax2.set_ylabel('Cumulative Contribution (%)')
-ax2.set_ylim(0, 110)
-
-plt.xticks(rotation=45, ha='right')
-plt.tight_layout()
-
-plt.savefig(
-    VISUALS_PATH / 'cancellation_pareto_analysis.png',
-    dpi=300,
-    bbox_inches='tight'
-)
-
-# plt.show()
+print('\nData exploration completed successfully.')

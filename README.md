@@ -22,8 +22,6 @@ The goal is to transform raw booking data into actionable business insights that
 
 7. Which countries and booking channels generate the highest revenue?
 
-8. Which customer characteristics are associated with higher value?
-
 ## Data Source
 
 The main dataset used in this project is the **Hotel Booking Demand Dataset**, originally published in:
@@ -186,23 +184,32 @@ The data quality assessment identified exact duplicate rows, missing values, a n
 
 ## Visualizations
 
-The project includes visualizations to support the analysis of booking trends and cancellation patterns.
+The project includes visualizations to support the analysis of booking trends, cancellations, and estimated revenue.
 
-- **Year-over-year booking growth:** compares changes in booking volume between equivalent months in different years for City Hotel and Resort Hotel.
+### Booking analysis
 
+- **Monthly booking volume:** shows the evolution of monthly bookings throughout the observation period.
+- **Monthly bookings by hotel:** compares booking trends between City Hotel and Resort Hotel.
+- **Year-over-year booking growth:** compares changes in booking volume between equivalent months in different years.
+
+### Cancellation analysis
+
+- **Cancellation rate by lead time:** compares cancellation rates across booking lead-time groups.
 - **Cancellation rates by hotel and customer type:** compares cancellation rates across customer segments for both hotels.
+- **Cancellation rate by hotel:** compares the overall cancellation rate between the two hotel types.
+- **Cancellation Pareto analysis:** ranks hotel and customer-type segments by canceled bookings and displays their cumulative contribution to total cancellations.
 
-- **Cancellation Pareto analysis:** ranks hotel and customer-type segments by canceled bookings and displays their cumulative contribution to total cancellations. The three largest segments account for approximately 93.58% of all cancellations.
+### Revenue analysis
 
-The visualizations are saved in the `visuals/` directory.
+- **Monthly estimated revenue:** shows the evolution of estimated revenue over time, based on ADR multiplied by total nights.
+
+All visualizations are saved in the `visuals/` directory.
 
 ## Technologies
 
 - Python
 
 - Pandas
-
-- NumPy
 
 - Matplotlib
 
