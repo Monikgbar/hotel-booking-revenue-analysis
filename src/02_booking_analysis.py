@@ -20,7 +20,49 @@ VISUALS_PATH.mkdir(parents=True, exist_ok=True)
 
 
 # ==============================================
-# 2. BOOKING VOLUME ANALYSIS
+# 2. LENGTH OF STAY ANALYSIS
+# ==============================================
+
+# Calculate descriptive statistics for total nights
+stay_duration = df_analysis['total_nights'].describe()
+
+print('\nLength of stay - Descriptive statistics:')
+print(stay_duration)
+
+# Compare length of stay by hotel
+stay_duration_by_hotel = (
+    df_analysis
+    .groupby('hotel')['total_nights']
+    .agg(
+        total_bookings='count',
+        average_nights='mean',
+        median_nights='median',
+        min_nights='min',
+        max_nights='max'
+    ) 
+)
+
+print('\nLength of stay by hotel:')
+print(stay_duration_by_hotel.round(2))
+
+# Compare length of stay by hotel and customer type
+stay_duration_by_customer_hotel = (
+    df_analysis
+    .groupby(['customer_type', 'hotel'])['total_nights']
+    .agg(
+        total_bookings='count',
+        average_nights='mean',
+        median_nights='median'
+    )
+    .sort_values('average_nights', ascending=False)
+)
+
+print('\nLength of stay by customer type and hotel:')
+print(stay_duration_by_customer_hotel.round(2))
+
+
+# ==============================================
+# 3. BOOKING VOLUME ANALYSIS
 # ==============================================
 
 # Count bookings by year and month
@@ -32,7 +74,7 @@ booking_by_month = (
 
 
 # ==============================================
-# 3. BOOKING ANALYSIS BY HOTEL
+# 4. BOOKING ANALYSIS BY HOTEL
 # ==============================================
 
 # Calculate monthly bookings by hotel type
@@ -48,7 +90,7 @@ print(monthly_bookings_by_hotel)
 
 
 # ==============================================
-# 4. BOOKING GROWTH ANALYSIS
+# 5. BOOKING GROWTH ANALYSIS
 # ==============================================
 
 # Calculate month-to-month percentage change in bookings
@@ -68,7 +110,7 @@ print(monthly_booking_growth_yoy.round(2))
 
 
 # ==============================================
-# 5. BOOKING ANALYSIS BY CUSTOMER TYPE
+# 6. BOOKING ANALYSIS BY CUSTOMER TYPE
 # ==============================================
 
 # Analyze bookings by customer type
@@ -95,7 +137,7 @@ print(customer_type_share.round(2))
 
 
 # ==============================================
-# 6. LEAD TIME ANALYSIS BY CUSTOMER TYPE
+# 7. LEAD TIME ANALYSIS BY CUSTOMER TYPE
 # ==============================================
 
 # Analyze lead time
@@ -115,7 +157,32 @@ print(lead_time_by_customer_type.round(2))
 
 
 # ==============================================
-# 7. VISUALIZATIONS
+# 8. COMPLETED STAY ANALYSIS
+# ==============================================
+
+# Filter bookings with completed stays
+df_checked_out = df_analysis[
+    df_analysis['reservation_status'] == 'Check-Out'
+].copy()
+
+# Calculate length of stay by hotel and customer type
+actual_stay_by_segment = (
+    df_checked_out
+    .groupby(['hotel', 'customer_type'])['total_nights']
+    .agg(
+        total_bookings='count',
+        average_nights='mean',
+        median_nights='median'
+    )
+    .round(2)
+)
+
+print('\nActual length of stay by hotel and customer type:')
+print(actual_stay_by_segment.round(2))
+
+
+# ==============================================
+# 9. VISUALIZATIONS
 # ==============================================
 
 # Plot monthly booking volume
@@ -210,5 +277,51 @@ plt.savefig(
 
 plt.close()
 
+# Plot actual length of stay by hotel and customer type
+stay_duration_plot = actual_stay_by_segment['average_nights'].unstack(
+    level='hotel'
+)
+
+fig, ax = plt.subplots(figsize=(10, 6))
+
+stay_duration_plot.plot(
+    kind='bar',
+    ax=ax,
+    width=0.85,
+    edgecolor='white',
+    linewidth=0.7
+)
+
+# Add value labels
+for container in ax.containers:
+    ax.bar_label(
+        container, fmt='%.2f',
+        padding=3,
+        fontsize=9
+    )
+
+ax.set_title(
+    'Average Length of Stay by Hotel and Customer Type',
+    fontsize=14,
+    pad=15
+)
+ax.set_xlabel('Customer Type')
+ax.set_ylabel('Average Nights')
+ax.legend(title='Hotel')
+
+ax.tick_params(axis='x', rotation=0)
+ax.grid(axis='y', linestyle='--', alpha=0.3)
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+plt.tight_layout()
+
+plt.savefig(
+    VISUALS_PATH / 'average_stay_by_customer_type.png',
+    dpi=300,
+    bbox_inches='tight'
+)
+
+plt.close()
 
 print('\nBooking analysis completed successfully.')
