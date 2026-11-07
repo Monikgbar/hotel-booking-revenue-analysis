@@ -1,10 +1,21 @@
 # Hotel Booking & Revenue Analysis
 
+**A data analysis project exploring hotel booking patterns, cancellations, customer behavior, and estimated revenue using Python.**
+
+![Python](https://img.shields.io/badge/Python-3.13-blue?logo=python)
+![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-150458?logo=pandas)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-Visualization-11557c)
+![Status](https://img.shields.io/badge/Project-Completed-success)
+
 ## Project Overview
 
-This project analyzes hotel booking data to identify patterns in demand, seasonality, cancellations, revenue, and customer behavior.
+This project explores hotel booking data from two hotels in Portugal: City Hotel and Resort Hotel.
 
-The goal is to transform raw booking data into actionable business insights that could support hotel management and revenue-related decision-making.
+Using Python, Pandas, and Matplotlib, the analysis examines booking trends, seasonality, cancellation patterns, length of stay, customer segments, and estimated revenue across different distribution channels.
+
+The main objective is to transform raw booking data into meaningful business insights that could support hotel management, demand analysis, and revenue-related decision-making.
+
+The project follows a structured data analysis workflow, including data preparation, exploratory data analysis, data quality assessment, business-oriented analysis, and data visualization.
 
 ## Business Questions
 
@@ -12,7 +23,7 @@ The goal is to transform raw booking data into actionable business insights that
 
 2. Is there a seasonal pattern in demand?
 
-3. How does monthly revenue evolve?
+3. How does monthly estimated revenue evolve?
 
 4. What is the average length of stay, and how does it vary?
 
@@ -20,7 +31,7 @@ The goal is to transform raw booking data into actionable business insights that
 
 6. What is the booking volume and cancellation rate?
 
-7. Which countries and booking channels generate the highest revenue?
+7. Which countries and booking channels generate the highest estimated revenue?
 
 ## Data Source
 
@@ -164,50 +175,152 @@ Portugal has the lowest average ADR and the shortest average length of stay amon
 
 **Limitations:** The country analysis includes only the ten countries with the highest booking counts. Country-level averages do not explain the reasons behind the observed differences. Estimated revenue is calculated as ADR multiplied by total nights and should not be interpreted as actual revenue or profit. In addition, 488 bookings have no recorded country, so the country analysis does not cover every booking in the dataset.
 
-### Overall findings and next steps
+### Overall findings
 
-The exploratory analysis identified several patterns in hotel booking behavior. Cancellation rates are higher among bookings made further in advance and vary across customer types and hotels. In City Hotel, the Contract segment has the highest cancellation rate at 48.04%, compared with 8.84% for the same segment in Resort Hotel. However, City Hotel – Transient contributes the largest share of all cancellations (61.27%), reflecting its much higher booking volume. The three largest hotel and customer-type segments account for approximately 93.58% of all cancellations. The analysis also revealed differences in booking volume, average ADR, and estimated revenue across countries.
+The analysis identified several patterns in hotel booking behavior, cancellations, length of stay, and estimated revenue.
 
-The data quality assessment identified exact duplicate rows, missing values, a negative ADR value, bookings with no guests recorded, and bookings with zero nights. These limitations have been documented, and potentially problematic records have been retained unless there is sufficient evidence to justify a different treatment.
+**Booking cancellations**
 
-**Next steps:**
+Cancellation rates are higher among bookings made further in advance. Bookings made 181 days or more before arrival have a cancellation rate of 57.01%, compared with 18.56% for bookings made 30 days or less in advance.
 
-- Investigate the main contributors to cancellations in greater detail, considering additional booking characteristics and booking conditions.
+Cancellation rates also vary across customer types and hotels. In City Hotel, the Contract segment has the highest cancellation rate (48.04%), while in Resort Hotel the highest rate corresponds to Transient customers (31.17%). These differences show associations, but do not establish the causes of cancellations.
 
-- Analyze trends in bookings and estimated revenue over time, taking into account the partial coverage of 2015 and 2017.
+**Length of stay**
 
-- Evaluate the impact of data quality decisions on key metrics.
+Completed stays are longer on average at Resort Hotel (4.14 nights) than at City Hotel (2.92 nights).
 
-- Extend the visual analysis and develop evidence-based business recommendations.
+The Contract segment at Resort Hotel stands out, with an average stay of 8.49 nights, compared with 3.06 nights at City Hotel. Transient customers account for the largest volume of completed stays in both hotels.
 
-**Important limitation:** Estimated revenue is calculated as ADR multiplied by total nights. It is a proxy derived from the available data and should not be interpreted as actual revenue or profit.
+**Distribution channels**
 
-## Visualizations
+TA/TO (Travel Agents and Tour Operators) accounts for 76.79% of completed bookings and 80.05% of their estimated revenue. Direct bookings represent 16.08% of completed bookings and 16.64% of estimated revenue.
 
-The project includes visualizations to support the analysis of booking trends, cancellations, and estimated revenue.
+The contribution of Direct bookings differs between hotels: they account for 22.82% of Resort Hotel's estimated revenue, compared with 11.65% at City Hotel. City Hotel shows a greater dependence on TA/TO channels.
 
-### Booking analysis
+These results describe booking volume and estimated revenue, but do not establish channel profitability because commission rates and acquisition costs are not available.
 
-- **Monthly booking volume:** shows the evolution of monthly bookings throughout the observation period.
-- **Monthly bookings by hotel:** compares booking trends between City Hotel and Resort Hotel.
-- **Year-over-year booking growth:** compares changes in booking volume between equivalent months in different years.
+**Data quality**
 
-### Cancellation analysis
+The data quality assessment identified exact duplicate rows, missing values, a negative ADR value, bookings with no guests recorded, and bookings with zero nights. These records have been retained where the available information was insufficient to justify their removal. Their potential impact has been considered when interpreting the results.
 
-- **Cancellation rate by lead time:** compares cancellation rates across booking lead-time groups.
-- **Cancellation rates by hotel and customer type:** compares cancellation rates across customer segments for both hotels.
-- **Cancellation rate by hotel:** compares the overall cancellation rate between the two hotel types.
-- **Cancellation Pareto analysis:** ranks hotel and customer-type segments by canceled bookings and displays their cumulative contribution to total cancellations.
+**Important limitation**
 
-### Revenue analysis
+Estimated revenue is calculated as ADR multiplied by total nights. It is a proxy derived from the available data and should not be interpreted as actual revenue or profit. The channel analysis of revenue and completed stays uses only bookings with a `Check-Out` reservation status.
 
-- **Monthly estimated revenue:** shows the evolution of estimated revenue over time, based on ADR multiplied by total nights.
+## Key Visualizations
 
-All visualizations are saved in the `visuals/` directory.
+The following visualizations highlight some of the main findings of the analysis.
+
+### 1. Monthly Booking Volume
+
+Shows the evolution of booking volume over time, highlighting monthly fluctuations and seasonal patterns.
+
+![Monthly Booking Volume](visuals/monthly_booking_volume.png)
+
+### 2. Cancellation Rate by Hotel and Customer Type
+
+Compares cancellation rates across customer segments in City Hotel and Resort Hotel, revealing differences in cancellation behavior.
+
+![Cancellation Rate by Hotel and Customer Type](visuals/cancellation_rate_by_hotel_customer_type.png)
+
+### 3. Average Stay by Customer Type
+
+Compares the average length of completed stays across customer types and hotels.
+
+![Average Stay by Customer Type](visuals/average_stay_by_customer_type.png)
+
+### 4. Estimated Revenue by Distribution Channel
+
+Compares estimated revenue from completed stays across distribution channels, highlighting the contribution of each channel.
+
+![Estimated Revenue by Distribution Channel](visuals/estimated_revenue_by_channel.png)
+
+_Note: Estimated revenue is calculated as ADR multiplied by total nights. It should not be interpreted as actual revenue or profit._
+
+## All Visualizations
+
+### Booking Analysis
+
+- [Monthly Booking Volume](visuals/monthly_booking_volume.png)
+- [Monthly Bookings by Hotel](visuals/monthly_bookings_by_hotel.png)
+- [Year-over-Year Booking Growth](visuals/year_over_year_booking_growth.png)
+- [Average Stay by Customer Type](visuals/average_stay_by_customer_type.png)
+
+### Cancellation Analysis
+
+- [Cancellation Rate by Lead Time](visuals/cancellation_rate_by_lead_time.png)
+- [Cancellation Rate by Hotel](visuals/cancellation_rate_by_hotel.png)
+- [Cancellation Rate by Hotel and Customer Type](visuals/cancellation_rate_by_hotel_customer_type.png)
+- [Cancellation Pareto Analysis](visuals/cancellation_pareto_analysis.png)
+
+### Revenue Analysis
+
+- [Monthly Estimated Revenue](visuals/monthly_estimated_revenue.png)
+- [Estimated Revenue by Distribution Channel](visuals/estimated_revenue_by_channel.png)
+- [Estimated Revenue Share by Hotel and Distribution Channel](visuals/estimated_revenue_share_by_channel_hotel.png)
+
+_Note: Estimated revenue is calculated as ADR multiplied by total nights. It is an estimate and should not be interpreted as actual revenue or profit._
+
+## Repository Structure
+
+```text
+hotel-booking-revenue-analysis/
+│
+├── data/
+│   └── raw/
+│       └── hotel_bookings.csv
+│
+├── src/
+│   ├── data_preparation.py
+│   ├── 01_data_exploration.py
+│   ├── 02_booking_analysis.py
+│   ├── 03_cancellation_analysis.py
+│   └── 04_revenue_analysis.py
+│
+├── visuals/
+│   ├── monthly_booking_volume.png
+│   ├── monthly_bookings_by_hotel.png
+│   ├── year_over_year_booking_growth.png
+│   ├── average_stay_by_customer_type.png
+│   ├── cancellation_rate_by_lead_time.png
+│   ├── cancellation_rate_by_hotel.png
+│   ├── cancellation_rate_by_hotel_customer_type.png
+│   ├── cancellation_pareto_analysis.png
+│   ├── monthly_estimated_revenue.png
+│   ├── estimated_revenue_by_channel.png
+│   └── estimated_revenue_share_by_channel_hotel.png
+│
+├── README.md
+└── requirements.txt
+```
+
+## Requirements
+
+- Python 3.13
+- pip (Python package installer).
+
+### Python libraries
+
+The project uses the following libraries:
+
+- Pandas
+- Matplotlib
+
+### Installation
+
+Clone the repository and install the required dependencies:
+
+```bash
+git clone https://github.com/Monikgbar/hotel-booking-revenue-analysis.git
+
+cd hotel-booking-revenue-analysis
+
+pip install -r requirements.txt
+```
 
 ## Technologies
 
-- Python
+- Python 3.13
 
 - Pandas
 
@@ -221,4 +334,18 @@ All visualizations are saved in the `visuals/` directory.
 
 ## Project Status
 
-🚧 Work in progress
+**Analysis completed**
+
+The main data exploration and analysis phases have been completed.
+
+The project currently includes:
+
+- Data loading and preparation.
+- Exploratory data analysis and data quality assessment.
+- Booking and cancellation analysis.
+- Length of stay analysis.
+- Estimated revenue analysis.
+- Distribution channel analysis.
+- Business-oriented visualizations and documented findings.
+
+Further improvements may include developing an interactive dashboard and expanding the business recommendations.

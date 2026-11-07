@@ -240,18 +240,57 @@ print(channel_performance)
 # Plot monthly estimated revenue
 fig, ax = plt.subplots(figsize=(12, 6))
 
-monthly_analysis['estimated_revenue'].plot(
-    kind='line',
+ax.plot(
+    monthly_analysis.index.astype(str),
+    monthly_analysis['estimated_revenue'],
+    color='#2878A0',
     marker='o',
-    ax=ax
+    markersize=5,
+    linewidth=2,
+    label='Estimated Revenue'
 )
 
-ax.set_title('Monthly Estimated Revenue')
-ax.set_xlabel('Arrival Year-Month')
-ax.set_ylabel('Estimated Revenue (€)')
+# Customize chart
+ax.set_title(
+    'Monthly Estimated Revenue',
+    fontsize=14,
+    fontweight='bold',
+    pad=15
+)
+ax.set_xlabel('Arrival Year-Month', fontsize=11, labelpad=10)
+ax.set_ylabel('Estimated Revenue (€)', fontsize=11, labelpad=10)
 
-ax.grid(True, alpha=0.3)
-ax.tick_params(axis='x', rotation=45)
+# Display one date label every two months
+tick_positions = range(len(monthly_analysis))
+
+ax.set_xticks(tick_positions)
+ax.set_xticklabels(
+    [
+        str(month) if i % 2 == 0 else ''
+        for i, month in enumerate(monthly_analysis.index)
+    ],
+    rotation=45,
+    ha='right'
+)
+
+# Format revenue axis in millions of euros
+ax.yaxis.set_major_formatter(
+    plt.FuncFormatter(lambda x, pos: f'{x / 1_000_000:.1f} M€')
+)
+
+# Configure grid
+ax.grid(
+    axis='y',
+    linestyle='--',
+    linewidth=0.7,
+    alpha=0.3
+)
+
+# Remove unnecessary borders
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+ax.set_axisbelow(True)
 
 plt.tight_layout()
 
@@ -270,40 +309,71 @@ revenue_share_plot = revenue_share_by_hotel.unstack(
 
 fig, ax = plt.subplots(figsize=(10, 6))
 
+# Define consistent hotel colors
+hotel_colors = {
+    'City Hotel': '#219EBC',
+    'Resort Hotel': '#FB8500'
+}
+
 revenue_share_plot.plot(
     kind='bar',
     ax=ax,
-    width=0.85,
+    width=0.75,
+    color=[
+        hotel_colors[hotel]
+        for hotel in revenue_share_plot.columns
+    ],
     edgecolor='white',
     linewidth=0.7
 )
 
-# Add value labels
+# Add percentage labels
 for container in ax.containers:
+    labels = [
+        '<0.01%' if 0 < bar.get_height() < 0.01
+        else f'{bar.get_height():.2f}%'
+        if bar.get_height() < 1
+        else f'{bar.get_height():.1f}%'
+        for bar in container
+    ]
+
     ax.bar_label(
         container,
-        fmt='%.2f%%',
+        labels=labels,
         padding=3,
         fontsize=9
     )
 
 # Customize chart
 ax.set_title(
-    'Estimated revenue share by distribution channel and hotel',
+    'Estimated Revenue Share by Distribution Channel and Hotel',
     fontsize=14,
+    fontweight='bold',
     pad=15
 )
-ax.set_xlabel('Distribution Channel')
-ax.set_ylabel('Estimated Revenue Share (%)')
-ax.legend(title='Hotel')
+
+ax.set_xlabel('Distribution Channel', fontsize=11, labelpad=10)
+ax.set_ylabel('Estimated Revenue Share (%)', fontsize=11, labelpad=10)
 
 ax.tick_params(axis='x', rotation=0)
-ax.grid(axis='y', linestyle='--', alpha=0.3)
-ax.set_axisbelow(True)
+
+# Configure grid and legend
+ax.legend(title='Hotel', frameon=False)
+ax.grid(
+    axis='y', 
+    linestyle='--', 
+    linewidth=0.7,
+    alpha=0.3
+)
 
 # Remove unnecessary borders
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
+
+ax.set_axisbelow(True)
+
+# Leave room for percentage labels
+ax.margins(y=0.12)
 
 plt.tight_layout()
 
@@ -315,6 +385,7 @@ plt.savefig(
 
 plt.close()
 
+
 # Plot total estimated revenue by distribution channel
 fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -323,7 +394,8 @@ revenue_by_channel['total_estimated_revenue'].sort_values(
 ).plot(
     kind='bar',
     ax=ax,
-    width=0.85,
+    width=0.75,
+    color='#2878A0',
     edgecolor='white',
     linewidth=0.7
 )
@@ -346,10 +418,12 @@ for container in ax.containers:
 ax.set_title(
     'Total Estimated Revenue by Distribution Channel',
     fontsize=14,
+    fontweight='bold',
     pad=15
 )
-ax.set_xlabel('Distribution Channel')
-ax.set_ylabel('Estimated Revenue (Millions €)')
+
+ax.set_xlabel('Distribution Channel', fontsize=11, labelpad=10)
+ax.set_ylabel('Estimated Revenue (Millions €)', fontsize=11, labelpad=10)
 
 # Format y-axis in millions of euros
 ax.yaxis.set_major_formatter(
@@ -357,11 +431,23 @@ ax.yaxis.set_major_formatter(
 )
 
 ax.tick_params(axis='x', rotation=0)
-ax.grid(axis='y', linestyle='--', alpha=0.3)
-ax.set_axisbelow(True)
 
+# Configure grid
+ax.grid(
+    axis='y', 
+    linestyle='--', 
+    linewidth=0.7,
+    alpha=0.3
+)
+
+# Remove unnecessary borders
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
+
+ax.set_axisbelow(True)
+
+# Leave room for value labels
+ax.margins(y=0.12)
 
 plt.tight_layout()
 
